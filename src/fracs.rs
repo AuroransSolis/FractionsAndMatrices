@@ -152,7 +152,7 @@ impl Frac {
         self.try_simplify()
     }
 
-    pub fn div(mut self, other: Frac) -> Frac {
+    pub fn div(self, other: Frac) -> Frac {
         self.mul(other.inverse()).try_simplify()
     }
 
@@ -171,7 +171,7 @@ impl Frac {
             };
             let lcm = get_lcm(a, b) as i32;
             let self_mult = lcm / a as i32;
-            let mut other_mult = lcm / b as i32;
+            let other_mult = lcm / b as i32;
             self.num *= self_mult;
             self.num -= other.num * other_mult;
             self.den = lcm;
@@ -227,7 +227,7 @@ fn get_gcd(mut a: u32, mut b: u32) -> u32 {
 }
 
 // Neat trick here: lcm = a * b / gcd
-fn get_lcm(mut a: u32, mut b: u32) -> u32 {
+fn get_lcm(a: u32, b: u32) -> u32 {
     let gcd = get_gcd(a, b);
     a * b / gcd
 }

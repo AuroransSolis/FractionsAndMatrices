@@ -1,10 +1,10 @@
-mod Fracs;
-use Fracs::*;
-mod Mats;
-use Mats::*;
+mod fracs;
+use fracs::*;
+mod mats;
+use mats::*;
 
 fn main() {
-    let ayy = Frac::from(-5);
+    /*let ayy = Frac::from(-5);
     let bee = Frac::from(8);
     let see = Frac::new(-3, 5);
     let dee = Frac::new(7, 3);
@@ -40,5 +40,11 @@ fn main() {
             println!("\n{}\n", mat);
         },
         Err(e) => println!("{}", e)
-    }
+    }*/
+    let vals = vec![0, 1, 0, 4, 2, 0, 0, 5, 0, 0, 3, 6, 1, 2, 3, 4];
+    let test_matr = Matrix::from_1d_vec(4, vals).unwrap();
+    println!("{}\n", test_matr);
+    //test_matr.reduced_row_echelon_form(true);
+    //println!("{}", test_matr);
+    println!("{}", test_matr.is_linearly_independent());
 }

@@ -1,12 +1,12 @@
 use std::fmt;
 use std::cmp;
 
-use Fracs;
+use fracs;
 
 #[derive(Clone)]
 pub struct Matrix {
     pub dimension: (usize, usize),
-    pub matrix: Vec<Vec<Fracs::Frac>>
+    pub matrix: Vec<Vec<fracs::Frac>>
 }
 
 impl fmt::Display for Matrix {
@@ -66,21 +66,21 @@ impl fmt::Display for Matrix {
 }
 
 enum RowOps {
-    add((usize, usize)),
-    sub((usize, usize)),
-    mul((usize, Fracs::Frac)),
-    div((usize, Fracs::Frac)),
-    swap_rows((usize, usize)),
+    Add((usize, usize)),
+    Sub((usize, usize)),
+    Mul((usize, fracs::Frac)),
+    Div((usize, fracs::Frac)),
+    SwapRows((usize, usize)),
 }
 
 
 impl Matrix {
-    pub fn from_dimension(dim: (usize, usize)) -> Matrix {
-        let mut mat: Vec<Vec<Fracs::Frac>> = Vec::with_capacity(dim.0);
+    pub fn from_dimension(dim: (usize, usize)) -> Self {
+        let mut mat: Vec<Vec<fracs::Frac>> = Vec::with_capacity(dim.0);
         for _ in 0..dim.0 {
-            let mut row: Vec<Fracs::Frac> = Vec::with_capacity(dim.1);
+            let mut row: Vec<fracs::Frac> = Vec::with_capacity(dim.1);
             for _ in 0..dim.1 {
-                row.push(Fracs::Frac::from(0));
+                row.push(fracs::Frac::from(0));
             }
             mat.push(row);
         }
@@ -90,7 +90,7 @@ impl Matrix {
         }
     }
 
-    pub fn from_vecs(vecs: Vec<Vec<Fracs::Frac>>) -> Result<Matrix, String> {
+    pub fn from_vecs(vecs: Vec<Vec<fracs::Frac>>) -> Result<Matrix, String> {
         for a in 0..vecs.len() - 1 {
             for b in a..vecs.len() {
                 if vecs[a].len() != vecs[b].len() {
@@ -101,6 +101,29 @@ impl Matrix {
         let ret = Matrix {
             dimension: (vecs.len(), vecs[0].len()),
             matrix: vecs
+        };
+        Ok(ret)
+    }
+
+    pub fn from_1d_vec(width: usize, vec: Vec<i32>) -> Result<Matrix, String> {
+        if vec.len() % width != 0 {
+            return Err(String::from(
+                format!("Input vec len ({}) is not divisible by desired matrix width ({}).", vec.len(), width)
+            ));
+        }
+        let mut matr: Vec<Vec<fracs::Frac>> = Vec::with_capacity(vec.len() / width);
+        let mut ct = 0;
+        for _ in 0..vec.len() / width {
+            let mut new: Vec<fracs::Frac> = Vec::with_capacity(width);
+            for _ in 0..width {
+                new.push(fracs::Frac::from(vec[ct]));
+                ct += 1;
+            }
+            matr.push(new);
+        }
+        let ret = Matrix {
+            dimension: (vec.len() / width, width),
+            matrix: matr
         };
         Ok(ret)
     }
@@ -138,7 +161,7 @@ impl Matrix {
         }
         let mut ret = Matrix::from_dimension((self.dimension.0, other.dimension.1));
         for a in 0..self.matrix[0].len() {
-            let mut total = Fracs::Frac::from(0);
+            let mut total = fracs::Frac::from(0);
             for b in 0..other.matrix.len() {
                 let new = self.matrix[a][b].mul(other.matrix[b][a]);
                 total = total.add(new);
@@ -150,27 +173,27 @@ impl Matrix {
 
     fn row_op(&mut self, op: RowOps) {
         match op {
-            RowOps::add(tup) => {
+            RowOps::Add(tup) => {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].add(self.matrix[tup.1][b]);
                 }
             },
-            RowOps::sub(tup) => {
+            RowOps::Sub(tup) => {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].sub(self.matrix[tup.1][b]);
                 }
             },
-            RowOps::mul(tup) => {
+            RowOps::Mul(tup) => {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].mul(tup.1);
                 }
             },
-            RowOps::div(tup) => {
+            RowOps::Div(tup) => {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].div(tup.1);
                 }
             },
-            RowOps::swap_rows(tup) => {
+            RowOps::SwapRows(tup) => {
                 self.matrix.swap(tup.0, tup.1);
             }
         }
@@ -178,23 +201,23 @@ impl Matrix {
 
     // Wrapper functions for convenience
     pub fn row_ops_add(&mut self, target_row: usize, tool: usize) {
-        self.row_op(RowOps::add((target_row, tool)))
+        self.row_op(RowOps::Add((target_row, tool)))
     }
 
     pub fn row_ops_sub(&mut self, target_row: usize, tool: usize) {
-        self.row_op(RowOps::sub((target_row, tool)))
+        self.row_op(RowOps::Sub((target_row, tool)))
     }
 
-    pub fn row_ops_mul(&mut self, target_row: usize, amt: Fracs::Frac) {
-        self.row_op(RowOps::mul((target_row, amt)))
+    pub fn row_ops_mul(&mut self, target_row: usize, amt: fracs::Frac) {
+        self.row_op(RowOps::Mul((target_row, amt)))
     }
 
-    pub fn row_ops_div(&mut self, target_row: usize, amt: Fracs::Frac) {
-        self.row_op(RowOps::div((target_row, amt)))
+    pub fn row_ops_div(&mut self, target_row: usize, amt: fracs::Frac) {
+        self.row_op(RowOps::Div((target_row, amt)))
     }
 
     pub fn row_ops_swap(&mut self, row1: usize, row2: usize) {
-        self.row_op(RowOps::swap_rows((row1, row2)))
+        self.row_op(RowOps::SwapRows((row1, row2)))
     }
 
     pub fn row_echelon_form(&mut self, print_steps: bool) {
@@ -203,7 +226,9 @@ impl Matrix {
             for b in 0..a + 1 { // Keep tested values "below" or on the diagonal line
                 let amt1 = self.clone().matrix[a][b]; // Current value
                 if b < a { // "Under" the diagonal line
-                    let tst = self.clone().matrix[b][b]; // Get element above it on the diagonal line
+                    if amt1.num == 0 {
+                        continue;
+                    }
                     let mut sign = String::from("");
                     let mut neg = false;
                     match amt1.num > 0 {
@@ -268,7 +293,7 @@ impl Matrix {
                             print!("R{} {} R{} → R{0}\n{}\n\n", a + 1, sign, other + 1, self);
                         }
                         let amt1 = self.clone().matrix[a][b]; // Refresh current value
-                        if amt1.num != 1 && amt1.den != 1 {
+                        if amt1.num != 1 {
                             self.row_ops_div(a, amt1);
                             if print_steps {
                                 let foo = amt1.clone().inverse();
@@ -294,7 +319,7 @@ impl Matrix {
         for a in (0..max - 1).rev() {
             for b in (a + 1..max).rev() {
                 let amt = self.clone().matrix[a][b];
-                if !amt.cmp(&Fracs::Frac::from(0)).eq(&Fracs::CmpRes::Eq) {
+                if !amt.cmp(&fracs::Frac::from(0)).eq(&fracs::CmpRes::Eq) {
                     self.row_ops_mul(b, amt);
                     self.row_ops_sub(a, b);
                     self.row_ops_div(b, amt);
@@ -317,14 +342,13 @@ impl Matrix {
         }
         let mut unit = Matrix::from_dimension((slef.dimension.0, slef.dimension.1));
         for a in 0..unit.dimension.0 {
-            unit.matrix[a][a] = Fracs::Frac::from(1);
+            unit.matrix[a][a] = fracs::Frac::from(1);
         }
         let max = cmp::min(slef.dimension.0, slef.dimension.1);
         for a in 0..max {
             for b in 0..a + 1 {
                 let amt1 = slef.clone().matrix[a][b];
                 if b < a {
-                    let tst = slef.clone().matrix[b][b];
                     match amt1.num > 0 {
                         true => {
                             slef.row_ops_mul(b, amt1);
@@ -387,7 +411,7 @@ impl Matrix {
         for a in (0..max - 1).rev() {
             for b in (a + 1..max).rev() {
                 let amt = slef.clone().matrix[a][b];
-                if !amt.cmp(&Fracs::Frac::from(0)).eq(&Fracs::CmpRes::Eq) {
+                if !amt.cmp(&fracs::Frac::from(0)).eq(&fracs::CmpRes::Eq) {
                     slef.row_ops_mul(b, amt);
                     unit.row_ops_mul(b, amt);
                     slef.row_ops_sub(a, b);
@@ -397,18 +421,21 @@ impl Matrix {
                 }
             }
         }
-        let mut is_inverse = true;
         for a in 0..max { // Check to see if the original matrix is now a unit matrix
-            if !slef.clone().matrix[a][a].cmp(&Fracs::Frac::from(0)).eq(&Fracs::CmpRes::Eq) {
-                is_inverse = false;
-                return Err(String::from("Unable to convert matrix into unit matrix to make the inverse."));
+            for b in 0..max {
+                if a != b && !slef.clone().matrix[b][a].cmp(&fracs::Frac::from(0)).eq(&fracs::CmpRes::Eq) {
+                    return Err(String::from("Unable to convert matrix into unit matrix to make the inverse."));
+                }
+                if a == b && !slef.clone().matrix[b][a].cmp(&fracs::Frac::from(1)).eq(&fracs::CmpRes::Eq) {
+                    return Err(String::from("Unable to convert matrix into unit matrix to make the inverse."));
+                }
             }
         }
         Ok(unit)
     }
 
     // "Divide" by multiplying by the inverse of the other matrix
-    pub fn div(&mut self, mut other: Matrix) -> Result<Matrix, String> {
+    pub fn div(&mut self, other: Matrix) -> Result<Matrix, String> {
         if !(self.dimension.1 == other.dimension.0 && other.dimension.0 == other.dimension.1) {
             return Err(String::from("Unable to do division with these two matrices. The divisor must be a square matrix,\
             and the dividend's number of columns must be the same as that of both dimensions in the divisor."));
@@ -416,7 +443,7 @@ impl Matrix {
         let rehto = other.inverse();
         match rehto {
             Err(e) => Err(e),
-            Ok(mut xirtam) => {
+            Ok(xirtam) => {
                 let res = self.mul(xirtam);
                 match res {
                     Err(e) => Err(e),
@@ -425,4 +452,22 @@ impl Matrix {
             }
         }
     }
+
+    pub fn is_linearly_independent(&self) -> bool {
+        let mut tst = self.clone();
+        tst.reduced_row_echelon_form(false);
+        let max = cmp::min(self.dimension.0, self.dimension.1);
+        for a in 0..max {
+            for b in 0..max {
+                if a != b && !tst.matrix[a][b].cmp(&fracs::Frac::from(0)).eq(&fracs::CmpRes::Eq) {
+                    return false;
+                } else if a == b && !tst.matrix[a][b].cmp(&fracs::Frac::from(1)).eq(&fracs::CmpRes::Eq) {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+
 }
