@@ -36,7 +36,7 @@ fn main() {
     match new_matr {
         Ok(mut mat) => {
             println!("\n{}\n", mat);
-            mat.row_echelon_form(false);
+            mat.reduced_row_echelon_form(true);
             println!("\n{}\n", mat);
         },
         Err(e) => println!("{}", e)

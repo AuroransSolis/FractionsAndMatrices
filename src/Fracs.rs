@@ -66,6 +66,7 @@ impl Frac {
         }.try_simplify()
     }
 
+    // Not particularly relevant in this module, mostly in formatting in the matrix module
     pub fn as_string(&self) -> String {
         if self.den == 1 {
             return format!("{}", self.num);
@@ -85,6 +86,7 @@ impl Frac {
         self
     }
 
+    // Probably the most overused function in this module :^)
     pub fn try_simplify(mut self) -> Frac {
         if self.num == 0 {
             if self.den != 1 {
@@ -92,11 +94,11 @@ impl Frac {
             }
             return self;
         }
-        if self.den < 0 && self.num >= 0 {
+        if self.den < 0 && self.num >= 0 { // Keep the negative in the numerator
             self.den *= -1;
             self.num *= -1;
         }
-        if self.num < 0 && self.den < 0 {
+        if self.num < 0 && self.den < 0 { // Simplify to positives
             self.num *= -1;
             self.den *= -1;
         }
@@ -104,6 +106,7 @@ impl Frac {
             self.num /= self.den;
             self.den /= self.den;
         }
+        // Test if the numerator and denominator are coprime; if not, divide by gcd
         let a = match self.num < 0 {
             true => (0 - self.num) as u32,
             false => self.num as u32
@@ -121,7 +124,7 @@ impl Frac {
     }
 
     pub fn add(mut self, other: Frac) -> Frac {
-        if self.den == other.den || (0 - self.den == other.den && other.num < 0) {
+        if self.den == other.den || (0 - self.den == other.den && other.num < 0) { // ez case
             self.num += other.num;
             self.try_simplify()
         } else {
@@ -154,13 +157,7 @@ impl Frac {
     }
 
     pub fn sub(mut self, other: Frac) -> Frac {
-        if self.den == other.den {
-            match self.den > 0 {
-                true => self.num -= other.num,
-                false => self.num += other.num
-            }
-            return self.try_simplify();
-        } else if self.den == other.den.wrapping_abs() || self.den.wrapping_abs() == other.den {
+        if self.den == other.den { // ez case
             self.num -= other.num;
             return self.try_simplify();
         } else {
@@ -192,6 +189,7 @@ impl Frac {
                 return CmpRes::Lt;
             }
         }
+        // Compare numerators for equal denominators
         let a = match self.den < 0 {
             true => (0 - self.den) as u32,
             false => self.den as u32
@@ -201,8 +199,8 @@ impl Frac {
             false => other.den as u32
         };
         let lcm = get_lcm(a, b) as i32;
-        let self_lcm = self.num * other.den / lcm;
-        let other_lcm = other.num * self.num / lcm;
+        let self_lcm = self.num * lcm / self.den;
+        let other_lcm = other.num * lcm / other.den;
         if self_lcm < other_lcm {
             CmpRes::Lt
         } else if self_lcm == other_lcm {
@@ -213,6 +211,7 @@ impl Frac {
     }
 }
 
+// Using Euclid's Algorithm
 fn get_gcd(mut a: u32, mut b: u32) -> u32 {
     loop {
         if a > b {
@@ -227,6 +226,7 @@ fn get_gcd(mut a: u32, mut b: u32) -> u32 {
     }
 }
 
+// Neat trick here: lcm = a * b / gcd
 fn get_lcm(mut a: u32, mut b: u32) -> u32 {
     let gcd = get_gcd(a, b);
     a * b / gcd

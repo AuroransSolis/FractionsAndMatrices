@@ -11,7 +11,7 @@ pub struct Matrix {
 
 impl fmt::Display for Matrix {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut matr = String::from("");
+        let mut matr = String::from(""); // Will contain string for entire matrix
         let mut longest_in_column: Vec<usize> = Vec::with_capacity(self.dimension.1);
         for _ in 0..self.dimension.1 {
             longest_in_column.push(0);
@@ -24,7 +24,8 @@ impl fmt::Display for Matrix {
             }
         }
         for a in 0..self.dimension.0 {
-            let mut line = String::from("");
+            let mut line = String::from(""); // String for each individual line
+            // Add the appropriate character for the section of the bracket at the start of each line
             if a == 0 {
                 line = format!("⎡ {}", line);
             } else if a == self.dimension.0 - 1 {
@@ -32,6 +33,7 @@ impl fmt::Display for Matrix {
             } else {
                 line = format!("⎢ {}", line);
             }
+            // Add spacing to line up the right side of the numbers in each column
             for b in 0..self.dimension.1 {
                 let mut spacer_left = String::from("");
                 let elem_string = self.matrix[a][b].as_string();
@@ -44,6 +46,7 @@ impl fmt::Display for Matrix {
                     line = format!("{}{}{}, ", line, spacer_left, elem_string);
                 }
             }
+            // Append appropriate end symbol for bracket section at the end of each line
             if a == 0 {
                 line = format!("{} ⎤", line);
             } else if a == self.dimension.0 - 1 {
@@ -51,6 +54,7 @@ impl fmt::Display for Matrix {
             } else {
                 line = format!("{} ⎥", line);
             }
+            // Add line to matrix string, add newline if it's not the last line
             if a == self.dimension.0 - 1 {
                 matr = format!("{}{}", matr, line);
             } else {
@@ -101,6 +105,7 @@ impl Matrix {
         Ok(ret)
     }
 
+    // Untested
     pub fn add(&mut self, other: Matrix) -> Result<&mut Matrix, String> {
         if self.dimension.0 != other.dimension.0 || self.dimension.1 != other.dimension.1 {
             return Err(String::from("Matrices are not of the same dimension - unable to perform addition."));
@@ -113,6 +118,7 @@ impl Matrix {
         Ok(self)
     }
 
+    // Untested
     pub fn sub(&mut self, other: Matrix) -> Result<&mut Matrix, String> {
         if self.dimension.0 != other.dimension.0 || self.dimension.1 != other.dimension.1 {
             return Err(String::from("Matrices are not of the same dimension - unable to perform subtraction."));
@@ -125,6 +131,7 @@ impl Matrix {
         Ok(self)
     }
 
+    // Untested
     pub fn mul(&mut self, other: Matrix) -> Result<Matrix, String> {
         if self.dimension.1 != other.dimension.0 {
             return Err(String::from("Matrices do not have matching b, c dimensions for a, b x c, d."));
@@ -147,69 +154,56 @@ impl Matrix {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].add(self.matrix[tup.1][b]);
                 }
-                //println!("{}", self);
             },
             RowOps::sub(tup) => {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].sub(self.matrix[tup.1][b]);
                 }
-                //println!("{}", self);
             },
             RowOps::mul(tup) => {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].mul(tup.1);
                 }
-                //println!("{}", self);
             },
             RowOps::div(tup) => {
                 for b in 0..self.dimension.1 {
                     self.matrix[tup.0][b] = self.matrix[tup.0][b].div(tup.1);
                 }
-                //println!("{}", self);
             },
             RowOps::swap_rows(tup) => {
                 self.matrix.swap(tup.0, tup.1);
-                //println!("{}", self);
             }
         }
     }
 
+    // Wrapper functions for convenience
     pub fn row_ops_add(&mut self, target_row: usize, tool: usize) {
-        //println!("ROA | target: {}, tool: {}", target_row, tool);
         self.row_op(RowOps::add((target_row, tool)))
     }
 
     pub fn row_ops_sub(&mut self, target_row: usize, tool: usize) {
-        //println!("ROS | target: {}, tool: {}", target_row, tool);
         self.row_op(RowOps::sub((target_row, tool)))
     }
 
     pub fn row_ops_mul(&mut self, target_row: usize, amt: Fracs::Frac) {
-        //println!("ROM | target: {}, amt: {}", target_row, amt);
         self.row_op(RowOps::mul((target_row, amt)))
     }
 
     pub fn row_ops_div(&mut self, target_row: usize, amt: Fracs::Frac) {
-        //println!("ROD | target: {}, amt: {}", target_row, amt);
         self.row_op(RowOps::div((target_row, amt)))
     }
 
     pub fn row_ops_swap(&mut self, row1: usize, row2: usize) {
-        //println!("ROSw | row1: {}, row2: {}", row1, row2);
         self.row_op(RowOps::swap_rows((row1, row2)))
     }
 
     pub fn row_echelon_form(&mut self, print_steps: bool) {
         let max = cmp::min(self.dimension.0, self.dimension.1);
         for a in 0..max {
-            for b in 0..a + 1 {
-                let amt1 = self.clone().matrix[a][b];
-                if b < a {
-                    let tst = self.clone().matrix[b][b];
-                    if tst.num != 1 || tst.den != 1 {
-                        self.row_ops_div(a, amt1);
-                        continue;
-                    }
+            for b in 0..a + 1 { // Keep tested values "below" or on the diagonal line
+                let amt1 = self.clone().matrix[a][b]; // Current value
+                if b < a { // "Under" the diagonal line
+                    let tst = self.clone().matrix[b][b]; // Get element above it on the diagonal line
                     let mut sign = String::from("");
                     let mut neg = false;
                     match amt1.num > 0 {
@@ -240,28 +234,30 @@ impl Matrix {
                     }
                     continue;
                 }
-                if b == a /*&& (amt1.num != 1 && amt1.den == 1)*/ {
+                if b == a { // On the diagonal line
                     if amt1.num == 0 {
                         let mut other: i32 = -1;
-                        for i in (0..max).filter(|&i| i != a) {
+                        // Find row beneath current one with a value in the columnn that the current
+                        // row's missing
+                        for i in (b..max).filter(|&i| i != a) {
                             if self.clone().matrix[i][b].num != 0 {
                                 other = i as i32;
                                 break;
                             }
                         }
-                        if other == -1 {
+                        if other == -1 { // It's okay if there isn't one - just move on
                             continue;
                         }
                         let other = other as usize;
                         let mut add = true;
-                        let amt2 = self.clone().matrix[other][b];
+                        let amt2 = self.clone().matrix[other][b]; // Get second value
                         match amt2.num > 0 {
                             true => {
-                                self.row_ops_add(b, other);
+                                self.row_ops_add(b, other); // Get value in zero element
                             }
                             false => {
                                 add = false;
-                                self.row_ops_sub(b, other);
+                                self.row_ops_sub(b, other); // Get value in zero element
                             }
                         }
                         let sign = match add {
@@ -271,19 +267,19 @@ impl Matrix {
                         if print_steps {
                             print!("R{} {} R{} → R{0}\n{}\n\n", a + 1, sign, other + 1, self);
                         }
-                        let foo = self.clone().matrix[a][b];
-                        let foo = foo.inverse();
+                        let amt1 = self.clone().matrix[a][b]; // Refresh current value
                         if amt1.num != 1 && amt1.den != 1 {
                             self.row_ops_div(a, amt1);
                             if print_steps {
+                                let foo = amt1.clone().inverse();
                                 print!("({}) * R{} → R{1}\n{}\n\n", foo, a + 1, self);
                             }
                         }
                         continue;
                     }
-                    self.row_ops_div(a, amt1);
-                    let amt1 = amt1.inverse();
+                    self.row_ops_div(a, amt1); // Divide by self
                     if print_steps {
+                        let amt1 = amt1.inverse();
                         print!("({}) * R{} → R{1}\n{}\n\n", amt1, a + 1, self);
                     }
                     continue;
@@ -295,26 +291,138 @@ impl Matrix {
     pub fn reduced_row_echelon_form(&mut self, print_steps: bool) {
         self.row_echelon_form(print_steps);
         let max = cmp::min(self.dimension.0, self.dimension.1);
-        for a in 0..max - 1 {
-            for b in a + 1..max {
+        for a in (0..max - 1).rev() {
+            for b in (a + 1..max).rev() {
                 let amt = self.clone().matrix[a][b];
-                if amt.num != 1 || amt.den != 1 {
-                    let coef = match self.clone().matrix[b][b] {
-                        Fracs::Frac{num: 1, den: 1} => amt,
-                        _ => amt.div(self.clone().matrix[b][b])
-                    };
-                    self.row_ops_mul(b, coef);
+                if !amt.cmp(&Fracs::Frac::from(0)).eq(&Fracs::CmpRes::Eq) {
+                    self.row_ops_mul(b, amt);
                     self.row_ops_sub(a, b);
-                    self.row_ops_div(b, coef);
+                    self.row_ops_div(b, amt);
                     if print_steps {
-                        print!("R{} - ({}) * R{} → R{0}\n{}\n", a + 1, coef, b + 1, self);
+                        print!("R{} - ({}) * R{} → R{0}\n{}\n\n", a + 1, amt, b + 1, self);
                     }
                 }
             }
         }
     }
 
-    pub fn div(mut self, other: Matrix) -> Result<Matrix, String> {
-        Err(String::from("Error! You tried to use code the dev was too lazy to implement."))
+    // The inverse can be achieved by taking a matrix and transforming it into a unit matrix (RREF
+    // form) and applying the transformations to a unit matrix. The resulting non-unit matrix is the
+    // inverse of the original. This function combines the REF and RREF functions above and applies
+    // each transformation to a unit matrix.
+    pub fn inverse(&self) -> Result<Matrix, String> {
+        let mut slef = self.clone();
+        if slef.dimension.0 != slef.dimension.1 {
+            return Err(String::from("Matrix must be square in dimension to calculate the inverse."));
+        }
+        let mut unit = Matrix::from_dimension((slef.dimension.0, slef.dimension.1));
+        for a in 0..unit.dimension.0 {
+            unit.matrix[a][a] = Fracs::Frac::from(1);
+        }
+        let max = cmp::min(slef.dimension.0, slef.dimension.1);
+        for a in 0..max {
+            for b in 0..a + 1 {
+                let amt1 = slef.clone().matrix[a][b];
+                if b < a {
+                    let tst = slef.clone().matrix[b][b];
+                    match amt1.num > 0 {
+                        true => {
+                            slef.row_ops_mul(b, amt1);
+                            unit.row_ops_mul(b, amt1);
+                            slef.row_ops_sub(a, b);
+                            unit.row_ops_sub(a, b);
+                            slef.row_ops_div(b, amt1);
+                            unit.row_ops_div(b, amt1);
+                        },
+                        false => {
+                            let mut tmpamt = amt1;
+                            tmpamt.num *= -1;
+                            slef.row_ops_mul(b, tmpamt);
+                            unit.row_ops_mul(b, tmpamt);
+                            slef.row_ops_add(a, b);
+                            unit.row_ops_add(a, b);
+                            slef.row_ops_div(b, tmpamt);
+                            unit.row_ops_div(b, tmpamt);
+                        }
+                    }
+                    continue;
+                }
+                if b == a {
+                    if amt1.num == 0 {
+                        let mut other: i32 = -1;
+                        for i in (b..max).filter(|&i| i != a) {
+                            if slef.clone().matrix[i][b].num != 0 {
+                                other = i as i32;
+                                break;
+                            }
+                        }
+                        if other == -1 {
+                            continue;
+                        }
+                        let other = other as usize;
+                        let amt2 = slef.clone().matrix[other][b];
+                        match amt2.num > 0 {
+                            true => {
+                                slef.row_ops_add(b, other);
+                                unit.row_ops_add(b, other);
+                            },
+                            false => {
+                                slef.row_ops_sub(b, other);
+                                unit.row_ops_sub(b, other);
+                            }
+                        };
+                        let amt1 = slef.clone().matrix[a][b];
+                        if amt1.num != 1 && amt1.den != 1 {
+                            slef.row_ops_div(a, amt1);
+                            unit.row_ops_div(a, amt1);
+                        }
+                        continue;
+                    }
+                    slef.row_ops_div(a, amt1);
+                    unit.row_ops_div(a, amt1);
+                    continue;
+                }
+            }
+        }
+        for a in (0..max - 1).rev() {
+            for b in (a + 1..max).rev() {
+                let amt = slef.clone().matrix[a][b];
+                if !amt.cmp(&Fracs::Frac::from(0)).eq(&Fracs::CmpRes::Eq) {
+                    slef.row_ops_mul(b, amt);
+                    unit.row_ops_mul(b, amt);
+                    slef.row_ops_sub(a, b);
+                    unit.row_ops_sub(a, b);
+                    slef.row_ops_div(b, amt);
+                    unit.row_ops_div(b, amt);
+                }
+            }
+        }
+        let mut is_inverse = true;
+        for a in 0..max { // Check to see if the original matrix is now a unit matrix
+            if !slef.clone().matrix[a][a].cmp(&Fracs::Frac::from(0)).eq(&Fracs::CmpRes::Eq) {
+                is_inverse = false;
+                return Err(String::from("Unable to convert matrix into unit matrix to make the inverse."));
+            }
+        }
+        Ok(unit)
+    }
+
+    // "Divide" by multiplying by the inverse of the other matrix
+    pub fn div(&mut self, mut other: Matrix) -> Result<Matrix, String> {
+        if !(self.dimension.1 == other.dimension.0 && other.dimension.0 == other.dimension.1) {
+            return Err(String::from("Unable to do division with these two matrices. The divisor must be a square matrix,\
+            and the dividend's number of columns must be the same as that of both dimensions in the divisor."));
+        }
+        let rehto = other.inverse();
+        match rehto {
+            Err(e) => Err(e),
+            Ok(mut xirtam) => {
+                let res = self.mul(xirtam);
+                match res {
+                    Err(e) => Err(e),
+                    Ok(result) => Ok(result)
+                }
+            }
+        }
     }
 }
