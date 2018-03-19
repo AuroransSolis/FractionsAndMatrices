@@ -6,6 +6,15 @@ pub struct Frac {
     pub den: i32
 }
 
+impl PartialEq for Frac {
+    fn eq(&self, other: &Frac) -> bool {
+        match self.cmp(other) {
+            CmpRes::Eq => true,
+            _ => false
+        }
+    }
+}
+
 pub enum CmpRes {
     Eq,
     Lt,
@@ -51,7 +60,7 @@ impl From<i32> for Frac {
         Frac {
             num: num,
             den: 1
-        }.try_simplify()
+        }
     }
 }
 
@@ -128,17 +137,9 @@ impl Frac {
             self.num += other.num;
             self.try_simplify()
         } else {
-            let a = match self.den < 0 {
-                true => (0 - self.den) as u32,
-                false => self.den as u32
-            };
-            let b = match other.den < 0 {
-                true => (0 - other.den) as u32,
-                false => other.den as u32
-            };
-            let lcm = get_lcm(a, b) as i32;
-            let self_mult = lcm / a as i32;
-            let other_mult = lcm / b as i32;
+            let lcm = get_lcm(self.den, other.den) as i32;
+            let self_mult = lcm / self.den;
+            let other_mult = lcm / other.den;
             self.num *= self_mult;
             self.num += other.num * other_mult;
             self.den = lcm;
@@ -152,6 +153,12 @@ impl Frac {
         self.try_simplify()
     }
 
+    pub fn mul_no_ts(mut self, other: Frac) -> Frac {
+        self.num *= other.num;
+        self.den *= other.den;
+        self
+    }
+
     pub fn div(self, other: Frac) -> Frac {
         self.mul(other.inverse()).try_simplify()
     }
@@ -161,17 +168,9 @@ impl Frac {
             self.num -= other.num;
             return self.try_simplify();
         } else {
-            let a = match self.den < 0 {
-                true => (0 - self.den) as u32,
-                false => self.den as u32
-            };
-            let b = match other.den < 0 {
-                true => (0 - other.den) as u32,
-                false => other.den as u32
-            };
-            let lcm = get_lcm(a, b) as i32;
-            let self_mult = lcm / a as i32;
-            let other_mult = lcm / b as i32;
+            let lcm = get_lcm(self.den, other.den);
+            let self_mult = lcm / self.den;
+            let other_mult = lcm / other.den;
             self.num *= self_mult;
             self.num -= other.num * other_mult;
             self.den = lcm;
@@ -190,15 +189,7 @@ impl Frac {
             }
         }
         // Compare numerators for equal denominators
-        let a = match self.den < 0 {
-            true => (0 - self.den) as u32,
-            false => self.den as u32
-        };
-        let b = match other.den < 0 {
-            true => (0 - other.den) as u32,
-            false => other.den as u32
-        };
-        let lcm = get_lcm(a, b) as i32;
+        let lcm = get_lcm(self.den, other.den);
         let self_lcm = self.num * lcm / self.den;
         let other_lcm = other.num * lcm / other.den;
         if self_lcm < other_lcm {
@@ -211,23 +202,29 @@ impl Frac {
     }
 }
 
-// Using Euclid's Algorithm
-fn get_gcd(mut a: u32, mut b: u32) -> u32 {
+// Not using Euclid's Algorithm anymore because it's really slow >:v
+pub fn get_gcd(mut a: u32, mut b: u32) -> u32 {
     loop {
-        if a > b {
-            a -= b;
-        } else if b > a {
-            b -= a;
-        } else if b % a == 0 {
-            return b;
-        } else if a % b == 0 {
+        if b == 0 {
             return a;
+        } else {
+            let c = b;
+            b = a % b;
+            a = c;
         }
     }
 }
 
 // Neat trick here: lcm = a * b / gcd
-fn get_lcm(a: u32, b: u32) -> u32 {
-    let gcd = get_gcd(a, b);
-    a * b / gcd
+pub fn get_lcm(a: i32, b: i32) -> i32 {
+    let ayy = match a < 0 {
+        true => (0 - a) as u32,
+        false => a as u32
+    };
+    let bee = match b < 0 {
+        true => (0 - b) as u32,
+        false => b as u32
+    };
+    let gcd = get_gcd(ayy, bee);
+    (ayy * bee / gcd) as i32
 }

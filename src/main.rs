@@ -4,47 +4,14 @@ mod mats;
 use mats::*;
 
 fn main() {
-    /*let ayy = Frac::from(-5);
-    let bee = Frac::from(8);
-    let see = Frac::new(-3, 5);
-    let dee = Frac::new(7, 3);
-    println!("a = {}", ayy);
-    println!("b = {}", bee);
-    println!("c = {}", see);
-    println!("d = {}", dee);
-    println!("a * c = {}", see.mul(ayy));
-    println!("c * d = {}", dee.mul(see));
-    println!("b / d = {}", bee.div(dee));
-    println!("a + b = {}", ayy.add(bee));
-    let mut matrix = Matrix::from_dimension((3, 3));
-    for a in 0..matrix.dimension.0 {
-        for b in 0..matrix.dimension.1 {
-            //println!("Adding to matrix: {}", Frac::from((3 * a + b + 1) as i32));
-            matrix.matrix[a][b] = Frac::from((3 * a + b + 1) as i32);
-        }
+    let v1 = vec![16, -14, 6, 1, -13, 3, -12, -9, 10, -19, 2, -7, -4, 4, 5, -3];
+    let mut m1 = Matrix::from_i32_vec(4, v1, TSOpts{try: true, print: true}).unwrap();
+    let v2 = vec![-12, 20, -18, -2, 11, -17, -20, 10, 7, -9, -10, -11, 0, 16, 15, -14];
+    let mut m2 = Matrix::from_i32_vec(4, v2, TSOpts{try: true, print: true}).unwrap();
+    println!("Now beginning to do stuff.\n");
+    match m1.div(m2, true, true) {
+        Ok(mat) => print!("{}", mat),
+        Err(e) => print!("{}", e)
     }
-    matrix.matrix[1][1] = Frac::from(15);
-    println!("Start:\n{}\n", matrix);
-    matrix.row_echelon_form(true);
-    //println!("\n{}\n", matrix);
-    let r1 = vec![Frac::from(6), Frac::from(25), Frac::from(58), Frac::from(-54), Frac::from(5)];
-    let r2 = vec![ Frac::from(-52), Frac::from(-41), Frac::from(30), Frac::from(23), Frac::from(28)];
-    let r3 = vec![Frac::from(55), Frac::from(-74), Frac::from(-70), Frac::from(-56), Frac::from(17)];
-    let r4 = vec![Frac::from(11), Frac::from(81), Frac::from(9), Frac::from(-10), Frac::from(-53)];
-    let new_matr_data = vec![r1, r2, r3, r4];
-    let new_matr = Matrix::from_vecs(new_matr_data);
-    match new_matr {
-        Ok(mut mat) => {
-            println!("\n{}\n", mat);
-            mat.reduced_row_echelon_form(true);
-            println!("\n{}\n", mat);
-        },
-        Err(e) => println!("{}", e)
-    }*/
-    let vals = vec![0, 1, 0, 4, 2, 0, 0, 5, 0, 0, 3, 6, 1, 2, 3, 4];
-    let test_matr = Matrix::from_1d_vec(4, vals).unwrap();
-    println!("{}\n", test_matr);
-    //test_matr.reduced_row_echelon_form(true);
-    //println!("{}", test_matr);
-    println!("{}", test_matr.is_linearly_independent());
+    //println!("{}", m1);
 }
