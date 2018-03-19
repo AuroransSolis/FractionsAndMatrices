@@ -205,7 +205,6 @@ impl Matrix {
         Ok(self)
     }
 
-    // Untested
     pub fn mul(&mut self, other: Matrix, print_action: bool) -> Result<Matrix, String> {
         if self.dimension.1 != other.dimension.0 {
             return Err(String::from("Matrices do not have matching b, c dimensions for a, b x c, d."));
