@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::fmt;
 use std::cmp;
 
@@ -285,7 +287,7 @@ pub mod operations {
                 println!("{}\n", add_mat_to_string(self.to_string(), &other, Separator::Times));
             }
             let mut ret = Matrix::from_dimension((self.dimension.0, other.dimension.1));
-            for a in 0..self.matrix[0].len() {
+            for a in 0..self.dimension.0 {
                 for o in 0..other.dimension.1 {
                     let mut total = fracs::Frac::from(0);
                     let other_column = (0..other.dimension.0).map(|i| other.matrix[i][o]).collect::<Vec<fracs::Frac>>();

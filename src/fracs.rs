@@ -1,3 +1,5 @@
+#![allow(dead_code, non_snake_case_crates)]
+
 use std::fmt;
 
 #[derive(Clone, Copy)]

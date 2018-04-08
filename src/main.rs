@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 mod fracs;
 use fracs::*;
 mod mats;
@@ -43,16 +45,12 @@ fn main() {
     let mut m2_rref = m2.clone();
     m2_rref.reduced_row_echelon_form(false);
     print!("RREF(m2):\n\n{}\n\n", m2_rref);*/
-    let v1 = vec![2, 2, 3, 1, -2, -3, 4, -2, -3];
-    let mut m1_res = Matrix::from_i32_vec(3, v1, TSOpts{try: true, print: true});
+    let v1 = vec![11, -14, 5, 0, 2, -20, 18, -2, -10, 3, -19, 17, 9, -15, -5, -9, 16, 19,
+                  -17, 8, 7, 1, 20, 13, -11];
+    let m1_res = Matrix::from_i32_vec(5, v1, TSOpts{try: false, print: false});
     let mut m1 = match m1_res {
         Ok(matr) => matr,
         Err(e) => panic!(format!("Error! {}", e))
     };
-    let inv = m1.inverse(true);
-    if let Ok(mat) = inv {
-        println!("{}", mat);
-    } else {
-        println!("Failed to find inverse.");
-    }
+    m1.reduced_row_echelon_form(true);
 }
